@@ -1,0 +1,5 @@
+total: 27560 images
+13780
+
+validation (10%) = 2756
+testing (20%) = 5512
