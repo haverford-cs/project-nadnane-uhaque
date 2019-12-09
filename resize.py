@@ -1,10 +1,3 @@
-"""
-Adds padding to images to be 400x400
-Author: https://jdhao.github.io/2017/11/06/resize-image-to-square-with-padding/
-with minor adjustments by Nadine Adnane & Tanjuma Haque
-Date: 12/7/19
-"""
-
 from PIL import Image, ImageOps
 import cv2
 from imutils import paths

@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ########################################################
+
 # GLOBAL VARIABLES
 # Set path to original dataset images
 dataset_path = "malaria/cell_images"
@@ -42,8 +43,6 @@ val_split = 0.1
 # Define the batch size
 bs = 32
 
-# initialize validation/testing data augmentation object
-valAug = ImageDataGenerator(rescale=1 / 255.0)
 ########################################################
 
 def split_data(image_paths):
@@ -93,7 +92,9 @@ def split_data(image_paths):
             p = os.path.sep.join([labelPath, filename])
             shutil.copy2(inputPath, p)
 
-def mk_train():
+def augment_data():
+    # initialize the validation (and testing) data augmentation object
+    valAug = ImageDataGenerator(rescale=1 / 255.0)
     # initialize the training data augmentation object
     # randomly shifts, translats, and flips each training sample
     trainAug = ImageDataGenerator(
@@ -106,48 +107,40 @@ def mk_train():
         horizontal_flip=True,
         fill_mode="nearest")
     # initialize the training generator
-    train_dset = trainAug.flow_from_directory(
+    trainGen = trainAug.flow_from_directory(
         train_path,
         class_mode="categorical",
         target_size=(64, 64),
         color_mode="rgb",
         shuffle=True,
         batch_size=bs)
-    return train_dset
-
-def mk_val():
+ 
     # initialize the validation generator
-    val_dset = valAug.flow_from_directory(
+    valGen = valAug.flow_from_directory(
         val_path,
         class_mode="categorical",
         target_size=(64, 64),
         color_mode="rgb",
         shuffle=False,
         batch_size=bs)
-    return val_dset
-
-def mk_test():
+ 
     # initialize the testing generator
-    test_dset = valAug.flow_from_directory(
+    testGen = valAug.flow_from_directory(
         test_path,
         class_mode="categorical",
         target_size=(64, 64),
         color_mode="rgb",
         shuffle=False,
         batch_size=bs)
-    return test_dset
 
 def main():
-    # # Shuffle the dataset
-    # image_paths = list(paths.list_images(dataset_path))
-    # random.seed(42)
-    # random.shuffle(image_paths)
-    # # Split the dataset images into folders
-    # split_data(image_paths)
+    # Shuffle the dataset
+    image_paths = list(paths.list_images(dataset_path))
+    random.seed(42)
+    random.shuffle(image_paths)
 
-    # Prepare the training, validation, and testing data
-    train_dset = mk_train()
-    val_dset = mk_val()
-    test_dset = mk_test()
+    split_data(image_paths)
+    augment_data()
+    
 
 main()
