@@ -5,7 +5,7 @@
 
 12/1/19
 - Downloaded dataset
-- Scoped out images, realized they are all different sizes
+- Scoped out images, realized they are all different sizes and need to be padded
 
 
 12/3/19
@@ -14,8 +14,13 @@
 12/7/19
 - Added padding to all images, uniform size is now 400 x 400
 
+12/9/19
+-
+
 
 # References:
 https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
 
 https://towardsdatascience.com/detecting-malaria-using-deep-learning-fd4fdcee1f5a
+
+https://keras.io/preprocessing/image/
