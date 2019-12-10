@@ -8,7 +8,7 @@ Date: 12/5/19
 # Library Imports
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Dropout, MaxPooling2D
+from tensorflow.keras.layers import Activation, Dense, Conv2D, Flatten, Dropout, MaxPooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from imutils import paths
@@ -109,7 +109,7 @@ def mk_train():
     train_dset = trainAug.flow_from_directory(
         train_path,
         class_mode="categorical",
-        target_size=(64, 64),
+        target_size=(400, 400),
         color_mode="rgb",
         shuffle=True,
         batch_size=bs)
@@ -120,7 +120,7 @@ def mk_val():
     val_dset = valAug.flow_from_directory(
         val_path,
         class_mode="categorical",
-        target_size=(64, 64),
+        target_size=(400, 400),
         color_mode="rgb",
         shuffle=False,
         batch_size=bs)
@@ -131,7 +131,7 @@ def mk_test():
     test_dset = valAug.flow_from_directory(
         test_path,
         class_mode="categorical",
-        target_size=(64, 64),
+        target_size=(400, 400),
         color_mode="rgb",
         shuffle=False,
         batch_size=bs)
@@ -139,26 +139,44 @@ def mk_test():
 
 def main():
     # # Shuffle the dataset
-    # image_paths = list(paths.list_images(dataset_path))
-    # random.seed(42)
-    # random.shuffle(image_paths)
-    # # Split the dataset images into folders
-    # split_data(image_paths)
+    image_paths = list(paths.list_images(dataset_path))
+    random.seed(42)
+    random.shuffle(image_paths)
+    # Split the dataset images into folders
+    split_data(image_paths)
 
     # Prepare the training, validation, and testing data
     train_dset = mk_train()
     val_dset = mk_val()
     test_dset = mk_test()
 
-    i = 0
-    for inputs_batch, labels_batch in train_dset:
-        features_batch = conv_base.predict(inputs_batch)
-        train_features[i * batch_size : (i + 1) * batch_size] = features_batch
-        train_labels[i * batch_size : (i + 1) * batch_size] = labels_batch
-        i += 1
-        if i * batch_size >= nTrain:
-            break          
+    # Build the model
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), input_shape=(3, 400, 400)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
+    model.add(Conv2D(32, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+    model.add(Dense(64))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1))
+    model.add(Activation('sigmoid'))
+
+    model.fit_generator(
+        train_generator,
+        steps_per_epoch=2000 // bs,
+        epochs=50,
+        validation_data=val_dset,
+        validation_steps=800 // bs)
+    model.save_weights('first_try.h5')  # always save your weights after training or during training
 
 main()
