@@ -1,182 +1,248 @@
 """
-NN training and testing.
-Base code by Gracelyn Shi with modifications
-by Nadine Adnane & Tanjuma Haque
-Date: 12/5/19
+Using the malaria dataset, create a CNN and make test predictions!
+Raw image CNN blueprint code by Adrian Yijie Xu
+with modifications by Nadine Adnane & Tanjuma Haque
+Date: 12/10/19
 """
 
 # Library Imports
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Dense, Conv2D, Flatten, Dropout, MaxPooling2D
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-from imutils import paths
-from PIL import Image, ImageOps
-
-import os
-import random
-import shutil
+import tensorflow.keras
+from keras.preprocessing.image import ImageDataGenerator
+from keras import optimizers, layers, models
+import matplotlib.image as mpimg
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import shutil
+import os
 
-########################################################
-# GLOBAL VARIABLES
-# Set path to original dataset images
-dataset_path = "malaria/cell_images"
+##==========================================================================
+#|  GLOBAL VARIABLES
+##==========================================================================
+# Define directories
+base_dir ='malaria/cell_images/'
+work_dir =  "work/"
+# I = infected;  H = healthy
+base_dir_I ='malaria/cell_images/Infected/'
+base_dir_H ='malaria/cell_images/Healthy/'
 
-# Initialize base path for training and testing data
-base_path = "malaria"
+work_dir_I = "work/I/"
+work_dir_H = "work/H/"
 
-# Define training, validation, and testing directories
-train_path = os.path.sep.join([base_path, "training"])
-val_path = os.path.sep.join([base_path, "validation"])
-test_path = os.path.sep.join([base_path, "testing"])
- 
-# Define amount of data used for training
-train_split = 0.8
- 
-# Define amount of validation data (percent of the training data)
-val_split = 0.1
+train_dir = os.path.join(work_dir, 'train')
+validation_dir = os.path.join(work_dir, 'validation')
+test_dir = os.path.join(work_dir, 'test')
 
-# Define the batch size
-bs = 32
+train_pos_dir = os.path.join(train_dir, 'pos')
+train_neg_dir = os.path.join(train_dir, 'neg')
+validation_pos_dir = os.path.join(validation_dir, 'pos')
+validation_neg_dir = os.path.join(validation_dir, 'neg')
+test_pos_dir = os.path.join(test_dir, 'pos')
+test_neg_dir = os.path.join(test_dir, 'neg')
 
-# initialize validation/testing data augmentation object
-valAug = ImageDataGenerator(rescale=1 / 255.0)
-########################################################
+##==========================================================================
+#|  FUNCTIONS
+##==========================================================================
 
-def split_data(image_paths):
-    # Split the data into testing and training 
-    i = int(len(image_paths) * train_split)
-    trainPaths = image_paths[:i]
-    testPaths = image_paths[i:]
+def mk_dirs():
+    # Make all needed directories
+    os.mkdir(work_dir)
+    os.mkdir(work_dir_I)
+    os.mkdir(work_dir_H)
+    os.mkdir(train_dir)
+    os.mkdir(validation_dir)
+    os.mkdir(test_dir)
+    print("New directories for train, validation, and test created")
 
-    # set aside some of the training data for validation data 
-    i = int(len(trainPaths) * val_split)
-    valPaths = trainPaths[:i]
-    trainPaths = trainPaths[i:]
+    # Make pos/neg directories for train/validation/test
+    os.mkdir(train_pos_dir)
+    os.mkdir(train_neg_dir)
+    os.mkdir(validation_pos_dir)
+    os.mkdir(validation_neg_dir)
+    os.mkdir(test_pos_dir)
+    os.mkdir(test_neg_dir)
+    print("Train, Validation, and Test folders made for both Infected (I) and Healthy (H) datasets")
+    
+    # Rename "Infected" images to correspond with their class
+    i = 0
+    for filename in os.listdir(base_dir_I): 
+           dst ="pos" + str(i) + ".jpg"
+           src =base_dir_I + filename 
+           dst =work_dir_I + dst 
+           # rename all the files 
+           shutil.copy(src, dst) 
+           i += 1
+    # Rename "Healthy" images to correspond with their class
+    j = 0  
+    for filename in os.listdir(base_dir_H): 
+           dst ="neg" + str(j) + ".jpg"
+           src =base_dir_H + filename 
+           dst =work_dir_H + dst 
+           # rename all the files 
+           shutil.copy(src, dst) 
+           j += 1     
 
-    # define the training/validation/testing datasets 
-    datasets = [
-        ("training", trainPaths, train_path),
-        ("validation", valPaths, val_path),
-        ("testing", testPaths, test_path)
-        ]
+def split_data():
+    # Copy images to their proper directories
+    # Start with infected "pos" images
+    fnames = ['pos{}.jpg'.format(i) for i in range(3000)]
+    for fname in fnames:
+        src = os.path.join(work_dir_I, fname)
+        dst = os.path.join(train_pos_dir, fname)
+        shutil.copyfile(src, dst)
 
-    # loop over the datasets
-    for (dType, image_paths, baseOutput) in datasets:
-        # show which data split we are creating
-        print("[INFO] building '{}' split".format(dType))
-     
-        # if the output base output directory does not exist, create it
-        if not os.path.exists(baseOutput):
-            print("[INFO] 'creating {}' directory".format(baseOutput))
-            os.makedirs(baseOutput)
-     
-        # loop over the input image paths
-        for inputPath in image_paths:
-            # extract the filename of the input image and its class label
-            filename = inputPath.split(os.path.sep)[-1]
-            label = inputPath.split(os.path.sep)[-2]
-     
-            # build the path to the label directory
-            labelPath = os.path.sep.join([baseOutput, label])
-     
-            # if the label output directory does not exist, create it
-            if not os.path.exists(labelPath):
-                print("[INFO] 'creating {}' directory".format(labelPath))
-                os.makedirs(labelPath)
-     
-            # construct the path to the destination image and then copy
-            # the image itself
-            p = os.path.sep.join([labelPath, filename])
-            shutil.copy2(inputPath, p)
+    fnames = ['pos{}.jpg'.format(i) for i in range(3000, 4000)]
+    for fname in fnames:
+        src = os.path.join(work_dir_I, fname)
+        dst = os.path.join(validation_pos_dir, fname)
+        shutil.copyfile(src, dst)
 
-def mk_train():
-    # initialize the training data augmentation object
-    # randomly shifts, translats, and flips each training sample
-    trainAug = ImageDataGenerator(
-        rescale=1 / 255.0,
-        rotation_range=20,
-        zoom_range=0.05,
-        width_shift_range=0.05,
-        height_shift_range=0.05,
-        shear_range=0.05,
-        horizontal_flip=True,
-        fill_mode="nearest")
-    # initialize the training generator
-    train_dset = trainAug.flow_from_directory(
-        train_path,
-        class_mode="categorical",
-        target_size=(400, 400),
-        color_mode="rgb",
-        shuffle=True,
-        batch_size=bs)
-    return train_dset
+    fnames = ['pos{}.jpg'.format(i) for i in range(4000, 4500)]
+    for fname in fnames:
+        src = os.path.join(work_dir_I, fname)
+        dst = os.path.join(test_pos_dir, fname)
+        shutil.copyfile(src, dst)
 
-def mk_val():
-    # initialize the validation generator
-    val_dset = valAug.flow_from_directory(
-        val_path,
-        class_mode="categorical",
-        target_size=(400, 400),
-        color_mode="rgb",
-        shuffle=False,
-        batch_size=bs)
-    return val_dset
+    # Now work on healthy "neg" images
+    fnames = ['neg{}.jpg'.format(i) for i in range(3000)]
+    for fname in fnames:
+        src = os.path.join(work_dir_H, fname)
+        dst = os.path.join(train_neg_dir, fname)
+        shutil.copyfile(src, dst)
 
-def mk_test():
-    # initialize the testing generator
-    test_dset = valAug.flow_from_directory(
-        test_path,
-        class_mode="categorical",
-        target_size=(400, 400),
-        color_mode="rgb",
-        shuffle=False,
-        batch_size=bs)
-    return test_dset
+    fnames = ['neg{}.jpg'.format(i) for i in range(3000, 4000)]
+    for fname in fnames:
+        src = os.path.join(work_dir_H, fname)
+        dst = os.path.join(validation_neg_dir, fname)
+        shutil.copyfile(src, dst)
+
+    fnames = ['neg{}.jpg'.format(i) for i in range(4000, 4500)]
+    for fname in fnames:
+        src = os.path.join(work_dir_H, fname)
+        dst = os.path.join(test_neg_dir, fname)
+        shutil.copyfile(src, dst)
+    print("Train, validation, and test datasets split and ready for use")
+
+def mk_model():
+    model = models.Sequential()
+    model.add(layers.Conv2D(32, (3, 3), activation='relu',
+                            input_shape=(400, 400, 3)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(512, activation='relu'))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.summary()
+    model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=1e-5), metrics=['acc'])
+    print("Model created")
+    return model
+
+def normalize():
+    # Normalizes pixel intensities to be between 0 and 1
+    # Converts JPEG content into floating-point tensor maps of each image
+    train_datagen = ImageDataGenerator(rescale=1./255)
+    test_datagen = ImageDataGenerator(rescale=1./255)
+    train_gen = train_datagen.flow_from_directory(
+            train_dir,
+            target_size=(400, 400),
+            batch_size=20,
+            class_mode='binary')
+    val_gen = test_datagen.flow_from_directory(
+            validation_dir,target_size=(400, 400),
+            batch_size=20,
+            class_mode='binary')
+    print("Image preprocessing complete")
+
+    return (train_datagen, test_datagen, train_gen, val_gen)
+
+def train(model):
+    history = model.fit_generator(
+        train_gen,
+        steps_per_epoch=100,
+        epochs=30,
+        validation_data=val_gen,
+        validation_steps=200)
+    model.save('basic_malaria_pos_neg_v1.h5')
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(1, len(acc) + 1)
+    return (acc, epochs, val_acc, loss, val_loss)
+
+def plot_trn_data(epochs, acc, val_acc, loss, val_loss):
+    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.legend()
+    plt.figure()
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+    plt.show()
+
+def predict(model):
+    test_datagen = ImageDataGenerator(rescale=1./255)
+    test_gen = test_datagen.flow_from_directory(
+            test_dir,target_size=(400, 400),
+            batch_size=20,
+            class_mode='binary')
+    test_gen.reset()    
+    pred = model.predict_generator(test_gen,1000,verbose=1)
+    return (test_gen, pred)
+
+def print_data_stats():
+    print('total training pos images:', len(os.listdir(train_pos_dir)))
+    print('total training neg images:', len(os.listdir(train_neg_dir)))
+    print('total validation pos images:', len(os.listdir(validation_pos_dir)))
+    print('total validation neg images:', len(os.listdir(validation_neg_dir)))
+    print('total test pos images:', len(os.listdir(test_pos_dir)))
+    print('total test meg images:', len(os.listdir(test_neg_dir)))
+    print("Images have been copied to working directories, renamed to I & H + num")
 
 def main():
-    # # Shuffle the dataset
-    image_paths = list(paths.list_images(dataset_path))
-    random.seed(42)
-    random.shuffle(image_paths)
-    # Split the dataset images into folders
-    split_data(image_paths)
+    # Create all needed directories
+    mk_dirs()
+    
+    # Split data into training, validation, and testing data
+    split_data()
+    
+    # Sanity check
+    print_data_stats()
 
-    # Prepare the training, validation, and testing data
-    train_dset = mk_train()
-    val_dset = mk_val()
-    test_dset = mk_test()
+    # Normalize the data!
+    (train_datagen, test_datagen, train_gen, val_gen) = normalize()
 
-    # Build the model
-    model = Sequential()
-    model.add(Conv2D(32, (3, 3), input_shape=(3, 400, 400)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    # Create the CNN model!
+    model = mk_model()
 
-    model.add(Conv2D(32, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    # Train the model
+    (acc, epochs, val_acc, loss, val_loss) = train(model)
+        
+    # Plot the training and validation accuracy
+    plot_trn_data(epochs, acc, val_acc, loss, val_loss)
 
-    model.add(Conv2D(64, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    # Use the model on the testing dataset
+    (test_gen, pred) = predict(model)
+    print("Predictions finished!~")
 
-    model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
-
-    model.fit_generator(
-        train_generator,
-        steps_per_epoch=2000 // bs,
-        epochs=50,
-        validation_data=val_dset,
-        validation_steps=800 // bs)
-    model.save_weights('first_try.h5')  # always save your weights after training or during training
-
+    # Output visual!~
+    for index, probability in enumerate(pred):
+        image_path = test_dir + "/" + test_gen.filenames[index]
+        img = mpimg.imread(image_path)
+        
+        plt.imshow(img)
+        print(test_gen.filenames[index])
+        if probability > 0.5:
+            plt.title("%.2f" % (probability[0]*100) + "% H")
+        else:
+            plt.title("%.2f" % ((1-probability[0])*100) + "% I")
+        plt.show()
 main()
