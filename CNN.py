@@ -40,6 +40,13 @@ validation_neg_dir = os.path.join(validation_dir, 'neg')
 test_pos_dir = os.path.join(test_dir, 'pos')
 test_neg_dir = os.path.join(test_dir, 'neg')
 
+# Define training, validation, testing split
+total_images = 200
+class_images = total_images / 2
+num_train = int(class_images * .70)
+num_validation = int(class_images * .10)
+num_test = int(class_images * .20)
+
 ##==========================================================================
 #|  FUNCTIONS
 ##==========================================================================
@@ -85,38 +92,40 @@ def mk_dirs():
 def split_data():
     # Copy images to their proper directories
     # Start with infected "pos" images
-    fnames = ['pos{}.jpg'.format(i) for i in range(3000)]
+    fnames = ['pos{}.jpg'.format(i) for i in range(num_train)]
     for fname in fnames:
         src = os.path.join(work_dir_I, fname)
         dst = os.path.join(train_pos_dir, fname)
         shutil.copyfile(src, dst)
 
-    fnames = ['pos{}.jpg'.format(i) for i in range(3000, 4000)]
+    v = (num_train + num_validation)
+    fnames = ['pos{}.jpg'.format(i) for i in range(num_train, v)]
     for fname in fnames:
         src = os.path.join(work_dir_I, fname)
         dst = os.path.join(validation_pos_dir, fname)
         shutil.copyfile(src, dst)
 
-    fnames = ['pos{}.jpg'.format(i) for i in range(4000, 4500)]
+    t = v + num_test
+    fnames = ['pos{}.jpg'.format(i) for i in range(v, t)]
     for fname in fnames:
         src = os.path.join(work_dir_I, fname)
         dst = os.path.join(test_pos_dir, fname)
         shutil.copyfile(src, dst)
 
     # Now work on healthy "neg" images
-    fnames = ['neg{}.jpg'.format(i) for i in range(3000)]
+    fnames = ['neg{}.jpg'.format(i) for i in range(num_train)]
     for fname in fnames:
         src = os.path.join(work_dir_H, fname)
         dst = os.path.join(train_neg_dir, fname)
         shutil.copyfile(src, dst)
 
-    fnames = ['neg{}.jpg'.format(i) for i in range(3000, 4000)]
+    fnames = ['neg{}.jpg'.format(i) for i in range(num_train, v)]
     for fname in fnames:
         src = os.path.join(work_dir_H, fname)
         dst = os.path.join(validation_neg_dir, fname)
         shutil.copyfile(src, dst)
 
-    fnames = ['neg{}.jpg'.format(i) for i in range(4000, 4500)]
+    fnames = ['neg{}.jpg'.format(i) for i in range(v, t)]
     for fname in fnames:
         src = os.path.join(work_dir_H, fname)
         dst = os.path.join(test_neg_dir, fname)
@@ -161,20 +170,20 @@ def normalize():
 
     return (train_datagen, test_datagen, train_gen, val_gen)
 
-def train(model):
+def train(model, train_gen, val_gen):
     history = model.fit_generator(
         train_gen,
-        steps_per_epoch=100,
-        epochs=30,
+        steps_per_epoch=5,
+        epochs=10,
         validation_data=val_gen,
-        validation_steps=200)
+        validation_steps=10)
     model.save('basic_malaria_pos_neg_v1.h5')
     acc = history.history['acc']
     val_acc = history.history['val_acc']
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     epochs = range(1, len(acc) + 1)
-    return (acc, epochs, val_acc, loss, val_loss)
+    return (model, acc, epochs, val_acc, loss, val_loss)
 
 def plot_trn_data(epochs, acc, val_acc, loss, val_loss):
     plt.plot(epochs, acc, 'bo', label='Training acc')
@@ -195,8 +204,8 @@ def predict(model):
             batch_size=20,
             class_mode='binary')
     test_gen.reset()    
-    pred = model.predict_generator(test_gen,1000,verbose=1)
-    return (test_gen, pred)
+    pred = model.predict_generator(test_gen,num_validation,verbose=1)
+    return (model, test_gen, pred)
 
 def print_data_stats():
     print('total training pos images:', len(os.listdir(train_pos_dir)))
@@ -224,25 +233,25 @@ def main():
     model = mk_model()
 
     # Train the model
-    (acc, epochs, val_acc, loss, val_loss) = train(model)
+    (model, acc, epochs, val_acc, loss, val_loss) = train(model, train_gen, val_gen)
         
     # Plot the training and validation accuracy
     plot_trn_data(epochs, acc, val_acc, loss, val_loss)
 
     # Use the model on the testing dataset
-    (test_gen, pred) = predict(model)
+    (model, test_gen, pred) = predict(model)
     print("Predictions finished!~")
 
     # Output visual!~
-    for index, probability in enumerate(pred):
-        image_path = test_dir + "/" + test_gen.filenames[index]
-        img = mpimg.imread(image_path)
+    # for index, probability in enumerate(pred):
+    #     image_path = test_dir + "/" + test_gen.filenames[index]
+    #     img = mpimg.imread(image_path)
         
-        plt.imshow(img)
-        print(test_gen.filenames[index])
-        if probability > 0.5:
-            plt.title("%.2f" % (probability[0]*100) + "% H")
-        else:
-            plt.title("%.2f" % ((1-probability[0])*100) + "% I")
-        plt.show()
+    #     #plt.imshow(img)
+    #     print(test_gen.filenames[index])
+    #     if probability > 0.5:
+    #         plt.title("%.2f" % (probability[0]*100) + "% H")
+    #     else:
+    #         plt.title("%.2f" % ((1-probability[0])*100) + "% I")
+    #     #plt.show()
 main()
