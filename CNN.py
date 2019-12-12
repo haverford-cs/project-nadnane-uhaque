@@ -41,7 +41,7 @@ test_pos_dir = os.path.join(test_dir, 'pos')
 test_neg_dir = os.path.join(test_dir, 'neg')
 
 # Define training, validation, testing split
-total_images = 200
+total_images = 8000
 class_images = total_images / 2
 num_train = int(class_images * .70)
 num_validation = int(class_images * .10)
@@ -173,10 +173,10 @@ def normalize():
 def train(model, train_gen, val_gen):
     history = model.fit_generator(
         train_gen,
-        steps_per_epoch=5,
-        epochs=10,
+        steps_per_epoch=100,
+        epochs=30,
         validation_data=val_gen,
-        validation_steps=10)
+        validation_steps=200)
     model.save('basic_malaria_pos_neg_v1.h5')
     acc = history.history['acc']
     val_acc = history.history['val_acc']
