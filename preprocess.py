@@ -1,9 +1,10 @@
 # Library Imports
-import cv2
+from PIL import Image
 import numpy as np
 import os
 from keras.utils import np_utils
 import shutil
+np.set_printoptions(threshold=np.inf)
 ###############################################################################
 # Image Directories
 train_dir = 'malaria/cell_images/train'
@@ -18,48 +19,38 @@ num_classes = 2
 
 def split_data():
     # PREPARE TRAIN DATA
-    # Rename "Infected" images to correspond with their class
-    i = 0
-    fnames = os.listdir(infect_dir)[:int(num_train/2)]
-    for filename in fnames: 
-           src = infect_dir + '/' + filename 
-           print("filename is: ", filename)
-           dst = train_dir + '/Infected/' + filename
+    # Rename training images to correspond with their class
+    fnamesI = os.listdir(infect_dir)[:int(num_train/2)]
+    fnamesH = os.listdir(health_dir)[:int(num_train/2)]
+    print("end index of train data ", int(num_train/2))
+    for i in range(int(num_train/2)): 
+           filename1 = fnamesI[i]
+           src1 = infect_dir + '/' + filename1 
+           dst1 = train_dir + '/Infected/' + filename1
+
+           filename2 = fnamesH[i]
+           src2 = health_dir + '/' + filename2 
+           dst2 = train_dir + '/Healthy/' + filename2
            # rename all the files 
-           shutil.copy(src, dst) 
-           i += 1
-    # Rename "Healthy" images to correspond with their class
-    j = 0  
-    fnames = os.listdir(health_dir)[:int(num_train/2)]
-    for filename in fnames: 
-           src = health_dir + '/' + filename 
-           dst = test_dir + '/Healthy/' + filename
-           # rename all the files 
-           shutil.copy(src, dst) 
-           j += 1
+           shutil.copy(src1, dst1) 
+           shutil.copy(src2, dst2)
 
     # PREPARE TEST DATA
-      # Rename "Infected" images to correspond with their class
-    k = 0
+    # Rename testing images to correspond with their class
     end = int((num_train/2) + (num_test/2))
-    fnames = os.listdir(infect_dir)[int(num_train/2) : end]
-    for filename in fnames: 
-           dst = "infected" + str(i) + ".png"
-           src = infect_dir + filename 
-           dst = train_dir + 'Infected' + dst 
+    fnamesI = os.listdir(infect_dir)[int(num_train/2) : end]
+    fnamesH = os.listdir(health_dir)[int(num_train/2) : end]
+    for i in range(int(num_test/2)): 
+           filename1 = fnamesI[i]
+           src1 = infect_dir + '/' + filename1 
+           dst1 = test_dir + '/Infected/' + filename1
+
+           filename2 = fnamesH[i]
+           src2 = health_dir + '/' + filename2 
+           dst2 = test_dir + '/Healthy/' + filename2
            # rename all the files 
-           shutil.copy(src, dst) 
-           i += 1
-    # Rename "Healthy" images to correspond with their class
-    j = 0  
-    fnames = os.listdir(health_dir)[int(num_train/2) : end]
-    for filename in os.listdir(health_dir): 
-           dst ="healthy" + str(j) + ".png"
-           src = health_dir + filename 
-           dst = test_dir + 'Healthy' + dst 
-           # rename all the files 
-           shutil.copy(src, dst) 
-           j += 1
+           shutil.copy(src1, dst1) 
+           shutil.copy(src2, dst2)
 
 
 def load_data(typ, img_x, img_y):
@@ -84,18 +75,19 @@ def load_data(typ, img_x, img_y):
     for label in labels:
         img_names = os.listdir(os.path.join(dir_name, label))
         total = len(img_names)
-        print(label, total)
+        #print(label, total)
         for img_name in img_names:
-            img = cv2.imread(os.path.join(train_dir, label, img_name), cv2.IMREAD_COLOR)
-            img = np.array([img])
+            path = dir_name + '/' + label + '/' + img_name
+            img = Image.open(path)
+            img = np.array(img)
+            if i == 5513:
+              print("the shape of X is: " , X_data.shape)
+              print("i is currently: ", i)
             X_data[i] = img
             Y_data[i] = j
 
-            if i % 100 == 0:
-                print('Done: {0}/{1} images'.format(i, total))
             i += 1
-        j += 1    
-    print(i)                
+        j += 1                   
     print('Loading done.')
     
     print('Transform targets to keras compatible format.')

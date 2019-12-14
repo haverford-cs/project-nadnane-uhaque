@@ -55,6 +55,7 @@ def main():
 
     # Get the resized image data
     X_train, Y_train = load_data('train',img_x, img_y)
+    print ("got here")
     X_test, Y_test = load_data('test',img_x, img_y)
 
     # Print the shape of the train data
