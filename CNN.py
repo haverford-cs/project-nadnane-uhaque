@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score
 
 # My Imports
 from preprocess import load_data, split_data
-from util import resize, plot_ROC, plot_confusion
+from util import resize, plot_ROC, plot_confusion, plot_loss_acc
 
 ##==========================================================================
 #|  GLOBAL VARIABLES
@@ -55,7 +55,6 @@ def main():
 
     # Get the resized image data
     X_train, Y_train = load_data('train',img_x, img_y)
-    print ("got here")
     X_test, Y_test = load_data('test',img_x, img_y)
 
     # Print the shape of the train data
@@ -77,6 +76,9 @@ def main():
     # compute the accuracy
     test_accuracy = accuracy_score(Y_test.argmax(axis=-1),y_pred.argmax(axis=-1))
     print("Test_Accuracy = ", test_accuracy)
+
+    # Plot the accuracy and loss
+    plot_loss_acc(num_epoch)
 
     # Compute ROC values/plot curve
     plot_ROC(Y_test, y_pred, num_classes)

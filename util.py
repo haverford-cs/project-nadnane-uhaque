@@ -99,7 +99,7 @@ def plot_confusion(Y_test, y_pred):
     plt.xlabel('Predicted label')
     plt.show()
 
-def plot_loss_acc():
+def plot_loss_acc(num_epoch):
     # visualizing losses and accuracy
     train_loss=hist.history['loss']
     val_loss=hist.history['val_loss']
@@ -125,5 +125,4 @@ def plot_loss_acc():
     plt.title('train_acc vs val_acc')
     plt.grid(True)
     plt.legend(['train','val'])
-    #plt.style.use(['classic'])
     plt.style.use(['classic'])
