@@ -201,7 +201,7 @@ def plot_trn_data(epochs, acc, val_acc, loss, val_loss):
 def predict(model):
     test_datagen = ImageDataGenerator(rescale=1./255)
     test_gen = test_datagen.flow_from_directory(
-            test_dir,target_size=(400, 400),
+            test_dir,target_size=(img_dim, img_dim),
             batch_size=20,
             class_mode='binary')
     test_gen.reset()    
