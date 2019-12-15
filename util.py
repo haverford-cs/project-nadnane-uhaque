@@ -13,13 +13,13 @@ base_path = "malaria/cell_images"
 image_paths = list(paths.list_images(base_path))
 
 
-def resize():
+def resize(w, h):
 
     for im_pth in image_paths:
         src = cv2.imread(im_pth, cv2.IMREAD_UNCHANGED)
 
-        width = 64
-        height = 64
+        width = w
+        height = h
 
         # dsize
         dsize = (width, height)
@@ -99,7 +99,7 @@ def plot_confusion(Y_test, y_pred):
     plt.xlabel('Predicted label')
     plt.show()
 
-def plot_loss_acc(num_epoch):
+def plot_loss_acc(num_epoch, hist):
     # visualizing losses and accuracy
     train_loss=hist.history['loss']
     val_loss=hist.history['val_loss']
@@ -126,3 +126,6 @@ def plot_loss_acc(num_epoch):
     plt.grid(True)
     plt.legend(['train','val'])
     plt.style.use(['classic'])
+
+if __name__ == "__main__":
+    resize(150, 150)
