@@ -43,7 +43,6 @@ test_neg_dir = os.path.join(test_dir, 'neg')
 
 # Define training, validation, testing split
 total_images = 9000
-class_images = total_images / 2
 num_train = 3000
 num_validation = 1000
 num_test = 500
@@ -199,7 +198,7 @@ def plot_trn_data(epochs, acc, val_acc, loss, val_loss):
     plt.legend()
     plt.show()
     # Save the figure to a file
-    plt.savefig(fname = "Training_vs_Val_Loss", format = 'png')
+    plt.savefig(fname = "Training_vs_Val_Loss.png")
 
 def predict(model):
     test_datagen = ImageDataGenerator(rescale=1./255)
