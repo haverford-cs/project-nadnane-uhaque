@@ -25,26 +25,26 @@ channel = 3 #RGB
 # Model Properties
 num_classes = 2 
 batch_size = 1
-num_epoch = 60
+num_epoch = 30
 ##==========================================================================
 #|  FUNCTIONS
 ##==========================================================================
 def main():
     # Create the CNN
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), input_shape=(img_x,img_y,3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(32, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(64, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(32, (3, 3), activation='relu',
+                            input_shape=(img_x, img_y, 3)))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
     model.add(Flatten())
-    model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(num_classes, activation='sigmoid'))
     model.summary()
 
     # Compile the model
@@ -78,7 +78,7 @@ def main():
     print("Test_Accuracy = ", test_accuracy)
 
     # Plot the accuracy and loss
-    plot_loss_acc(num_epoch)
+    plot_loss_acc(num_epoch, hist)
 
     # Compute ROC values/plot curve
     plot_ROC(Y_test, y_pred, num_classes)
