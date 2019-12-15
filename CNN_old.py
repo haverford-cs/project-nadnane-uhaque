@@ -7,6 +7,7 @@ Date: 12/10/19
 
 # Library Imports
 import tensorflow.keras
+from keras.utils import plot_model
 from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers, layers, models
 import matplotlib.image as mpimg
@@ -178,7 +179,7 @@ def train(model, train_gen, val_gen):
         epochs=30,
         validation_data=val_gen,
         validation_steps=200)
-    model.save('basic_malaria_pos_neg_v1.h5')
+    #model.save('basic_malaria_pos_neg_v1.h5')
     acc = history.history['acc']
     val_acc = history.history['val_acc']
     loss = history.history['loss']
@@ -197,6 +198,8 @@ def plot_trn_data(epochs, acc, val_acc, loss, val_loss):
     plt.title('Training and validation loss')
     plt.legend()
     plt.show()
+    # Save the figure to a file
+    plt.savefig(fname = "Training_vs_Val_Loss", format = 'png')
 
 def predict(model):
     test_datagen = ImageDataGenerator(rescale=1./255)
@@ -206,6 +209,7 @@ def predict(model):
             class_mode='binary')
     test_gen.reset()    
     pred = model.predict_generator(test_gen,num_validation,verbose=1)
+
     return (model, test_gen, pred)
 
 def print_data_stats():
@@ -242,6 +246,9 @@ def main():
     # Use the model on the testing dataset
     (model, test_gen, pred) = predict(model)
     print("Predictions finished!~")
+
+    # Visualize the model
+    plot_model(model, to_file='model.png')
 
     # Output visual!~
     # for index, probability in enumerate(pred):
