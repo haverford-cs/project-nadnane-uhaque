@@ -248,7 +248,7 @@ def main():
     print("Predictions finished!~")
 
     # Visualize the model
-    plot_model(model, to_file='model.png')
+   # plot_model(model, to_file='model.png')
 
     # Output visual!~
     # for index, probability in enumerate(pred):
