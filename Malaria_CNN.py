@@ -81,7 +81,7 @@ print(model.summary())
 X_train, X_test, y_train, y_test = train_test_split(dataset, to_categorical(np.array(label)), test_size = 0.20, random_state = 0)
 
 # Train the model
-history1 = model.fit(np.array(X_train), 
+history = model.fit(np.array(X_train), 
                          y_train, 
                          batch_size = 64, 
                          verbose = 2, 
@@ -90,10 +90,10 @@ history1 = model.fit(np.array(X_train),
                          shuffle = False)
 
 # Plot the accuracy and loss
-acc = history1.history['accuracy']
-val_acc = history1.history['val_accuracy']
-loss = history1.history['loss']
-val_loss = history1.history['val_loss']
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
 epochs = range(1, len(acc) + 1)
 plt.plot(epochs, acc, 'bo', label='Training acc')
 plt.plot(epochs, val_acc, 'b', label='Validation acc')
@@ -133,7 +133,7 @@ test_generator = test_generator.flow(np.array(X_test),
 
 
 # Train the model again and test on the augmented data
-history2 = model.fit_generator(train_generator,
+history = model.fit_generator(train_generator,
                                    steps_per_epoch = len(X_train)/64,
                                    epochs = 50,
                                    shuffle = False)
@@ -141,8 +141,8 @@ history2 = model.fit_generator(train_generator,
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
 
 # Plot the training vs testing accuracy and loss
-aug_acc = history2.history['accuracy']
-aug_loss = history2.history['loss']
+aug_acc = history.history['accuracy']
+aug_loss = history.history['loss']
 epochs = range(1, len(aug_acc) + 1)
 plt.plot(epochs, acc, 'bo', label='Training acc')
 plt.plot(epochs, aug_acc, 'b', label='Augmented acc')
