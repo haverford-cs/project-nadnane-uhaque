@@ -11,7 +11,9 @@ from PIL import Image
 import numpy as np
 np.random.seed(1000)
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 
 import keras
@@ -25,6 +27,28 @@ DATA_DIR = 'malaria/cell_images/'
 SIZE = 64
 dataset = []
 label = []
+
+
+
+def plot_data(history, title):
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(1, len(acc) + 1)
+    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.legend()
+    plt.figure()
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+    #plt.show()
+    plt.savefig(title)
+
+
 
 # Process the infected images
 infected_images = os.listdir(DATA_DIR + 'Infected/')
@@ -85,6 +109,9 @@ history = model.fit(np.array(X_train),
                          validation_split = 0.1,
                          shuffle = False)
 
+# Plot the accuracy and loss
+plot_data(history, 'Training Accuracy and Loss.png')
+
 # Calculate and store testing accuracy
 print("Test_Accuracy: {:.2f}%".format(model.evaluate(np.array(X_test), np.array(y_test))[1]*100))
 
@@ -114,4 +141,22 @@ history = model.fit_generator(train_generator,
                                    epochs = 50,
                                    shuffle = False)
 
+plot_data(history, 'Augmented Training Accuracy and Loss.png')
+
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
+
+# Generate the confusion matrix
+
+Y_prediction = model.predict(test_generator)
+# Convert predictions classes to one hot vectors 
+Y_pred_classes = np.argmax(Y_prediction, axis = 1) 
+# Convert validation observations to one hot vectors
+Y_true = np.argmax(y_test, axis = 1) 
+# compute the confusion matrix
+confusion_mtx = confusion_matrix(Y_true, Y_pred_classes)
+plt.figure(figsize=(10,8))
+sns.heatmap(confusion_mtx, annot=True, fmt="d", cbar = True);
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.title('Confusion Matrix')
+plt.savefig("Confusion Matrix.png")
