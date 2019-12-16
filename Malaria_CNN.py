@@ -17,6 +17,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 
 import keras
+from keras import optimizers
 from keras.models import Sequential
 from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
@@ -31,8 +32,8 @@ label = []
 
 
 def plot_data(history, title):
-    acc = history.history['acc']
-    val_acc = history.history['val_acc']
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     epochs = range(1, len(acc) + 1)
