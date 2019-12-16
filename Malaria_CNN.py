@@ -29,8 +29,6 @@ SIZE = 64
 dataset = []
 label = []
 
-
-
 def plot_data(history, title):
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
@@ -48,8 +46,6 @@ def plot_data(history, title):
     plt.legend()
     #plt.show()
     plt.savefig(title)
-
-
 
 # Process the infected images
 infected_images = os.listdir(DATA_DIR + 'Infected/')
@@ -109,6 +105,7 @@ history = model.fit(np.array(X_train),
                          epochs = 50, 
                          validation_split = 0.1,
                          shuffle = False)
+print history.history.keys()
 
 # Plot the accuracy and loss
 plot_data(history, 'Training Accuracy and Loss.png')
@@ -140,8 +137,9 @@ test_generator = test_generator.flow(np.array(X_test),
 history = model.fit_generator(train_generator,
                                    steps_per_epoch = len(X_train)/64,
                                    epochs = 50,
+                                   validation_split = 0.1,
                                    shuffle = False)
-
+print history.history.keys()
 plot_data(history, 'Augmented Training Accuracy and Loss.png')
 
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
