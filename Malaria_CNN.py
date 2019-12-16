@@ -13,7 +13,7 @@ np.random.seed(1000)
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
 
 import keras
@@ -23,32 +23,12 @@ from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
 from keras.layers import Convolution2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Dropout
 
-# Define dataset directory
+# Define dataset directory and other properties
+num_classes = 2
 DATA_DIR = 'malaria/cell_images/'
 SIZE = 64
 dataset = []
 label = []
-
-def plot_data(history, typ):
-    acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
-    epochs = range(1, len(acc) + 1)
-    plt.plot(epochs, acc, 'bo', label='Training acc')
-    plt.plot(epochs, val_acc, 'b', label='Validation acc')
-    title = typ + ' and validation accuracy'
-    plt.title(title)
-    plt.legend()
-    plt.savefig(title + '.png')
-    plt.figure()
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    title = typ + ' and validation loss'
-    plt.title(title)
-    plt.legend()
-    #plt.show()
-    plt.savefig(title + '.png')
 
 # Process the infected images
 infected_images = os.listdir(DATA_DIR + 'Infected/')
@@ -101,7 +81,7 @@ print(model.summary())
 X_train, X_test, y_train, y_test = train_test_split(dataset, to_categorical(np.array(label)), test_size = 0.20, random_state = 0)
 
 # Train the model
-history = model.fit(np.array(X_train), 
+history1 = model.fit(np.array(X_train), 
                          y_train, 
                          batch_size = 64, 
                          verbose = 2, 
@@ -110,7 +90,24 @@ history = model.fit(np.array(X_train),
                          shuffle = False)
 
 # Plot the accuracy and loss
-plot_data(history, 'Training')
+acc = history1.history['accuracy']
+val_acc = history1.history['val_accuracy']
+loss = history1.history['loss']
+val_loss = history1.history['val_loss']
+epochs = range(1, len(acc) + 1)
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+title = 'Training and validation accuracy'
+plt.title(title)
+plt.legend()
+plt.savefig(title + '.png')
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+title = 'Training and validation loss'
+plt.title(title)
+plt.legend()
+plt.savefig(title + '.png')
 
 # Calculate and store testing accuracy
 print("Test_Accuracy: {:.2f}%".format(model.evaluate(np.array(X_test), np.array(y_test))[1]*100))
@@ -136,14 +133,30 @@ test_generator = test_generator.flow(np.array(X_test),
 
 
 # Train the model again and test on the augmented data
-history = model.fit_generator(train_generator,
+history2 = model.fit_generator(train_generator,
                                    steps_per_epoch = len(X_train)/64,
                                    epochs = 50,
                                    shuffle = False)
 
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
 
-plot_data(history, 'Augmented Training')
+# Plot the training vs testing accuracy and loss
+aug_acc = history2.history['accuracy']
+aug_loss = history2.history['loss']
+epochs = range(1, len(aug_acc) + 1)
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, aug_acc, 'b', label='Augmented acc')
+title = 'Training and Augmented Accuracy'
+plt.title(title)
+plt.legend()
+plt.savefig(title + '.png')
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, test_loss, 'b', label='Augmented loss')
+title = 'Training and Augmented loss'
+plt.title(title)
+plt.legend()
+plt.savefig(title + '.png')
 
 # Generate the confusion matrix
 
@@ -160,3 +173,30 @@ plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
 plt.title('Confusion Matrix')
 plt.savefig("Confusion Matrix.png")
+
+# Plot ROC curve
+#compute the ROC-AUC values
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+for i in range(num_classes):
+    fpr[i], tpr[i], _ = roc_curve(Y_test[:, i], y_pred[:, i])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+
+# Compute micro-average ROC curve and ROC area
+fpr["micro"], tpr["micro"], _ = roc_curve(Y_test.ravel(), y_pred.ravel())
+roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+#Plot ROC curve for the positive class
+plt.figure(figsize=(20,10), dpi=300)
+lw = 1 #true class label
+plt.plot(fpr[1], tpr[1], color='red',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc[1])
+plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristics')
+plt.legend(loc="lower right")
+plt.show()
