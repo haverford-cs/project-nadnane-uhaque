@@ -152,7 +152,7 @@ plt.legend()
 plt.savefig(title + '.png')
 plt.figure()
 plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, test_loss, 'b', label='Augmented loss')
+plt.plot(epochs, aug_loss, 'b', label='Augmented loss')
 title = 'Training and Augmented loss'
 plt.title(title)
 plt.legend()
@@ -180,11 +180,11 @@ fpr = dict()
 tpr = dict()
 roc_auc = dict()
 for i in range(num_classes):
-    fpr[i], tpr[i], _ = roc_curve(Y_test[:, i], y_pred[:, i])
+    fpr[i], tpr[i], _ = roc_curve(y_test[:, i], Y_prediction[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
 
 # Compute micro-average ROC curve and ROC area
-fpr["micro"], tpr["micro"], _ = roc_curve(Y_test.ravel(), y_pred.ravel())
+fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), Y_prediction.ravel())
 roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
 #Plot ROC curve for the positive class
