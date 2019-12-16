@@ -105,7 +105,7 @@ history = model.fit(np.array(X_train),
                          epochs = 50, 
                          validation_split = 0.1,
                          shuffle = False)
-print history.history.keys()
+print(history.keys())
 
 # Plot the accuracy and loss
 plot_data(history, 'Training Accuracy and Loss.png')
@@ -139,7 +139,7 @@ history = model.fit_generator(train_generator,
                                    epochs = 50,
                                    validation_split = 0.1,
                                    shuffle = False)
-print history.history.keys()
+print(history.keys())
 plot_data(history, 'Augmented Training Accuracy and Loss.png')
 
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
