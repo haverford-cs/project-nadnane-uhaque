@@ -15,7 +15,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
-from visualize import *
 
 import keras
 from keras import optimizers
@@ -100,19 +99,19 @@ loss = history.history['loss']
 val_loss = history.history['val_loss']
 epochs = range(1, len(acc) + 1)
 plt.plot(epochs, acc, 'bo', label='Training acc', )
-plt.plot(epochs, val_acc, 'r', label='Validation acc')
+plt.plot(epochs, val_acc, 'r', label='Testing acc')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Accuracy", fontsize = 16)
-title = 'Training and validation accuracy'
+title = 'Training and Testing accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
 plt.figure()
 plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.plot(epochs, val_loss, 'r', label='Testing loss')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Loss", fontsize = 16)
-title = 'Training and validation loss'
+title = 'Training and Testing loss'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
@@ -153,19 +152,19 @@ aug_acc = history.history['accuracy']
 aug_loss = history.history['loss']
 epochs = range(1, len(aug_acc) + 1)
 plt.plot(epochs, acc, 'bo', label='Training acc')
-plt.plot(epochs, aug_acc, 'g', label='Augmented acc')
+plt.plot(epochs, aug_acc, 'g', label='Augmented Training acc')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Accuracy", fontsize = 16)
-title = 'Training and Augmented Accuracy'
+title = 'Training and Augmented Training Accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
 plt.figure()
 plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, aug_loss, 'g', label='Augmented loss')
+plt.plot(epochs, aug_loss, 'g', label='Augmented Training loss')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Loss", fontsize = 16)
-title = 'Training and Augmented loss'
+title = 'Training and Augmented Training loss'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
@@ -215,13 +214,3 @@ plt.ylabel('True Positive Rate', fontsize = 16)
 plt.title('ROC Curve', fontsize = 20)
 plt.legend(loc="lower right", fontsize = 16)
 plt.savefig("ROC Curve.png")
-
-
-# Visualize the filters
-# the name of the layer we want to visualize
-LAYER_NAME1 = 'conv2d_1'
-LAYER_NAME2 = 'conv2d_2'
-
-# example function call
-visualize_layer(model, LAYER_NAME1)
-visualize_layer(model, LAYER_NAME2)
