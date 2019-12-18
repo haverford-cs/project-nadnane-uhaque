@@ -91,7 +91,7 @@ history = model.fit(np.array(X_train),
                          batch_size = 64, 
                          verbose = 2, 
                          epochs = 50, 
-                         Testing_split = 0.1,
+                         validation_split = 0.1,
                          shuffle = False)
 
 # Plot the accuracy and loss
