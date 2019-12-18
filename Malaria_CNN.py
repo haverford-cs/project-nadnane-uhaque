@@ -15,6 +15,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
+import visualize
 
 import keras
 from keras import optimizers
@@ -214,3 +215,13 @@ plt.ylabel('True Positive Rate', fontsize = 16)
 plt.title('ROC Curve', fontsize = 20)
 plt.legend(loc="lower right", fontsize = 16)
 plt.savefig("ROC Curve.png")
+
+
+# Visualize the filters
+# the name of the layer we want to visualize
+LAYER_NAME1 = 'conv2d_1'
+LAYER_NAME2 = 'conv2d_2'
+
+# example function call
+visualize_layer(model, LAYER_NAME1
+visualize_layer(model, LAYER_NAME1)
