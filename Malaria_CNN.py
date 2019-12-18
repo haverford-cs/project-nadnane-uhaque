@@ -225,7 +225,7 @@ plt.savefig("ROC Curve.png")
 
 # Show some correctly classified images
 correct = np.where(Y_pred_classes==Y_true)[0]
-print("Found %d correct labels", % len(correct))
+print("Found %d correct labels", len(correct))
 for i, correct in enumerate(correct[:9]):
     plt.subplot(3,3,i+1)
     plt.title("Predicted {}, Class {}".format(Y_pred_classes[correct], Y_true[correct]))
@@ -234,7 +234,7 @@ for i, correct in enumerate(correct[:9]):
 
 # Show hard to classify images
 incorrect = np.where(Y_pred_classes!=Y_true)[0]
-print("Found %d incorrect labels", % len(incorrect))
+print("Found %d incorrect labels", len(incorrect))
 for i, incorrect in enumerate(incorrect[:9]):
     plt.subplot(3,3,i+1)
     plt.title("Predicted {}, Class {}".format(Y_pred_classes[incorrect], Y_true[incorrect]))
