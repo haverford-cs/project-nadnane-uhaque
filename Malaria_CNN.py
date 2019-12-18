@@ -13,6 +13,7 @@ np.random.seed(1000)
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from visualize import *
@@ -90,7 +91,7 @@ history = model.fit(np.array(X_train),
                          batch_size = 64, 
                          verbose = 2, 
                          epochs = 50, 
-                         validation_split = 0.1,
+                         Testing_split = 0.1,
                          shuffle = False)
 
 # Plot the accuracy and loss
@@ -99,20 +100,22 @@ val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 epochs = range(1, len(acc) + 1)
-plt.plot(epochs, acc, 'bo', label='Training acc', )
-plt.plot(epochs, val_acc, 'r', label='Validation acc')
+
+plt.plot(epochs, acc, 'o', label='Training acc', )
+plt.plot(epochs, val_acc, 'r', label='Testing acc')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Accuracy", fontsize = 16)
-title = 'Training and validation accuracy'
+title = 'Training and Testing accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
+
 plt.figure()
-plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.plot(epochs, loss, 'o', label='Training loss')
+plt.plot(epochs, val_loss, 'r', label='Testing loss')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Loss", fontsize = 16)
-title = 'Training and validation loss'
+title = 'Training and Testing loss'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
@@ -152,20 +155,23 @@ print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generat
 aug_acc = history.history['accuracy']
 aug_loss = history.history['loss']
 epochs = range(1, len(aug_acc) + 1)
-plt.plot(epochs, acc, 'bo', label='Training acc')
+
+plt.figure()
+plt.plot(epochs, acc, 'b', label='Original acc')
 plt.plot(epochs, aug_acc, 'g', label='Augmented acc')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Accuracy", fontsize = 16)
-title = 'Training and Augmented Accuracy'
+title = 'Original vs Augmented Training Accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
+
 plt.figure()
-plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, loss, 'b', label='Original loss')
 plt.plot(epochs, aug_loss, 'g', label='Augmented loss')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Loss", fontsize = 16)
-title = 'Training and Augmented loss'
+title = 'Original vs Augmented Training loss'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
@@ -175,7 +181,7 @@ plt.savefig(title + '.png')
 Y_prediction = model.predict(test_generator)
 # Convert predictions classes to one hot vectors 
 Y_pred_classes = np.argmax(Y_prediction, axis = 1) 
-# Convert validation observations to one hot vectors
+# Convert Testing observations to one hot vectors
 Y_true = np.argmax(y_test, axis = 1) 
 # compute the confusion matrix
 confusion_mtx = confusion_matrix(Y_true, Y_pred_classes)
@@ -207,7 +213,7 @@ plt.figure(figsize=(20,10), dpi=300)
 lw = 1 #true class label
 plt.plot(fpr[1], tpr[1], color='red',
          lw=lw, label='ROC curve (area = %0.4f)' % roc_auc[1])
-plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--', linewidth = 3)
+plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate', fontsize = 16)
@@ -217,8 +223,28 @@ plt.legend(loc="lower right", fontsize = 16)
 plt.savefig("ROC Curve.png")
 
 
+# Show some correctly classified images
+correct = np.where(Y_pred_classes==Y_true)[0]
+print "Found %d correct labels" % len(correct)
+for i, correct in enumerate(correct[:9]):
+    plt.subplot(3,3,i+1)
+    plt.title("Predicted {}, Class {}".format(Y_pred_classes[correct], Y_true[correct]))
+    plt.tight_layout()
+    plt.imsave("correct.png", X_test[correct].reshape(64,64))
+
+# Show hard to classify images
+incorrect = np.where(Y_pred_classes!=Y_true)[0]
+print "Found %d incorrect labels" % len(incorrect)
+for i, incorrect in enumerate(incorrect[:9]):
+    plt.subplot(3,3,i+1)
+    plt.title("Predicted {}, Class {}".format(Y_pred_classes[incorrect], Y_true[incorrect]))
+    plt.tight_layout()
+    plt.imsave("incorrect.png", X_test[incorrect].reshape(64,64))
+
+
 # Visualize the filters
 # the name of the layer we want to visualize
+print("Trying to visualize filters . . .")
 LAYER_NAME1 = 'conv2d_1'
 LAYER_NAME2 = 'conv2d_2'
 

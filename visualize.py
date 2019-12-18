@@ -1,5 +1,5 @@
 """
-#Visualization of the filters of VGG16, via gradient ascent in input space.
+#Visualization of the filters of CNN, via gradient ascent in input space.
 This script can run on CPU in a few minutes.
 Results example: ![Visualization](http://i.imgur.com/4nj4KjN.jpg)
 """
@@ -10,7 +10,6 @@ import numpy as np
 from PIL import Image as pil_image
 from keras.preprocessing.image import save_img
 from keras import layers
-from keras.applications import vgg16
 from keras import backend as K
 
 
@@ -198,7 +197,7 @@ def visualize_layer(model,
                     height_margin: height_margin + output_dim[1], :] = img
 
         # save the result to disk
-        save_img('vgg_{0:}_{1:}x{1:}.png'.format(layer_name, n), stitched_filters)
+        save_img('cnn_{0:}_{1:}x{1:}.png'.format(layer_name, n), stitched_filters)
 
     # this is the placeholder for the input images
     assert len(model.inputs) == 1
@@ -206,6 +205,8 @@ def visualize_layer(model,
 
     # get the symbolic outputs of each "key" layer (we gave them unique names).
     layer_dict = dict([(layer.name, layer) for layer in model.layers[1:]])
+    print("the layer dictionary is: ", layer_dict)
+    print("model.layers = ", model.layers)
 
     output_layer = layer_dict[layer_name]
     assert isinstance(output_layer, layers.Conv2D)
