@@ -95,15 +95,15 @@ val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 epochs = range(1, len(acc) + 1)
-plt.plot(epochs, acc, 'bo', label='Training acc')
-plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.plot(epochs, acc, 'bo', label='Training acc', )
+plt.plot(epochs, val_acc, 'r', label='Validation acc')
 title = 'Training and validation accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
 plt.figure()
 plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.plot(epochs, val_loss, 'r', label='Validation loss')
 title = 'Training and validation loss'
 plt.title(title)
 plt.legend()
@@ -145,14 +145,14 @@ aug_acc = history.history['accuracy']
 aug_loss = history.history['loss']
 epochs = range(1, len(aug_acc) + 1)
 plt.plot(epochs, acc, 'bo', label='Training acc')
-plt.plot(epochs, aug_acc, 'b', label='Augmented acc')
+plt.plot(epochs, aug_acc, 'g', label='Augmented acc')
 title = 'Training and Augmented Accuracy'
 plt.title(title)
 plt.legend()
 plt.savefig(title + '.png')
 plt.figure()
 plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, aug_loss, 'b', label='Augmented loss')
+plt.plot(epochs, aug_loss, 'g', label='Augmented loss')
 title = 'Training and Augmented loss'
 plt.title(title)
 plt.legend()
@@ -168,10 +168,13 @@ Y_true = np.argmax(y_test, axis = 1)
 # compute the confusion matrix
 confusion_mtx = confusion_matrix(Y_true, Y_pred_classes)
 plt.figure(figsize=(10,8))
-sns.heatmap(confusion_mtx, annot=True, fmt="d", cbar = True);
-plt.ylabel('True Label')
-plt.xlabel('Predicted Label')
-plt.title('Confusion Matrix')
+sns.heatmap(confusion_mtx, 
+            annot=True, 
+            annot_kws = {'size':16, "ha": 'center', "va": 'center'},
+            fmt="d", cbar = True);
+plt.ylabel('True Label', fontsize = 18)
+plt.xlabel('Predicted Label', fontsize = 18)
+plt.title('Confusion Matrix', fontsize = 20)
 plt.savefig("Confusion Matrix.png")
 
 # Plot ROC curve
@@ -192,11 +195,11 @@ plt.figure(figsize=(20,10), dpi=300)
 lw = 1 #true class label
 plt.plot(fpr[1], tpr[1], color='red',
          lw=lw, label='ROC curve (area = %0.4f)' % roc_auc[1])
-plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--')
+plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--', linewidth = 3)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristics')
-plt.legend(loc="lower right")
+plt.xlabel('False Positive Rate', fontsize = 16)
+plt.ylabel('True Positive Rate', fontsize = 16)
+plt.title('ROC Curve', fontsize = 20)
+plt.legend(loc="lower right", fontsize = 16)
 plt.savefig("ROC Curve.png")
