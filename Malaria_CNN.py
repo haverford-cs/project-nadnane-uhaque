@@ -199,8 +199,8 @@ def plot_cm(model, y_test, test_generator):
     plt.figure(figsize=(10,8))
     # Define confusion matrix quadrant labels
     group_names = ['True Neg','False Pos','False Neg','True Pos']
-    group_counts = [“{0:0.0f}”.format(value) for value in confusion_mtx.flatten()]
-    group_percentages = [“{0:.2%}”.format(value) for value in confusion_mtx.flatten()/np.sum(confusion_mtx)]
+    group_counts = ['{0:0.0f'.format(value) for value in confusion_mtx.flatten()]
+    group_percentages = ['{0:.2%}'.format(value) for value in confusion_mtx.flatten()/np.sum(confusion_mtx)]
     labels = [f"{v1}\n{v2}\n{v3}" for v1, v2, v3 in zip(group_names,group_counts,group_percentages)]
     labels = np.asarray(labels).reshape(2,2)
     sns.heatmap(confusion_mtx, annot=True, fmt="d", cbar = True);
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     Y_pred_classes, Y_true = plot_ROC(y_test, Y_prediction)
 
     # Output a plot of some correctly and incorrectly classified images
-    save_examples(X_test, Y_pred_classes, Y_true):
+    save_examples(X_test, Y_pred_classes, Y_true)
 
     # Visualize some of the model filters!
     visualize_filters(model)
