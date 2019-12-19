@@ -151,15 +151,12 @@ history2 = model.fit_generator(train_generator,
 
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
 
-# Check the model layers
-print("model.layers = ", model.layers)
-print("number of layers is: ", len(model.layers))
 # Visualize the filters
 # the name of the layer we want to visualize
 print("Trying to visualize filters . . .")
-for layer in model.layers
+for layer in model.layers:
     # Visualize the current layer
-    visualize_layer(model, layer)
+    visualize_layer(model, layer.name)
 
 # Plot the training vs testing accuracy and loss
 aug_acc = history2.history['accuracy']
