@@ -86,7 +86,7 @@ print(model.summary())
 X_train, X_test, y_train, y_test = train_test_split(dataset, to_categorical(np.array(label)), test_size = 0.20, random_state = 0)
 
 # Train the model
-history = model.fit(np.array(X_train), 
+history1 = model.fit(np.array(X_train), 
                          y_train, 
                          batch_size = 64, 
                          verbose = 2, 
@@ -95,13 +95,13 @@ history = model.fit(np.array(X_train),
                          shuffle = False)
 
 # Plot the accuracy and loss
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
+acc = history1.history['accuracy']
+val_acc = history1.history['val_accuracy']
+loss = history1.history['loss']
+val_loss = history1.history['val_loss']
 epochs = range(1, len(acc) + 1)
 
-plt.plot(epochs, acc, 'o', label='Training acc', )
+plt.plot(epochs, acc, 'o', label='Training acc')
 plt.plot(epochs, val_acc, 'r', label='Testing acc')
 plt.xlabel("Epoch", fontsize = 16)
 plt.ylabel("Accuracy", fontsize = 16)
@@ -144,17 +144,28 @@ test_generator = test_generator.flow(np.array(X_test),
 
 
 # Train the model again and test on the augmented data
-history = model.fit_generator(train_generator,
+history2 = model.fit_generator(train_generator,
                                    steps_per_epoch = len(X_train)/64,
                                    epochs = 50,
                                    shuffle = False)
 
 print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generator(test_generator, steps = len(X_test), verbose = 1)[1]*100))
 
+# Check the model layers
+print("model.layers = ", model.layers)
+print("number of layers is: ", len(model.layers))
+# Visualize the filters
+# the name of the layer we want to visualize
+print("Trying to visualize filters . . .")
+for layer in model.layers
+    # Visualize the current layer
+    visualize_layer(model, layer)
+
 # Plot the training vs testing accuracy and loss
-aug_acc = history.history['accuracy']
-aug_loss = history.history['loss']
+aug_acc = history2.history['accuracy']
+aug_loss = history2.history['loss']
 epochs = range(1, len(aug_acc) + 1)
+
 
 plt.figure()
 plt.plot(epochs, acc, 'b', label='Original acc')
@@ -210,10 +221,9 @@ roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
 #Plot ROC curve for the positive class
 plt.figure(figsize=(20,10), dpi=300)
-lw = 1 #true class label
 plt.plot(fpr[1], tpr[1], color='red',
-         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc[1])
-plt.plot([0, 1], [0, 1], color='black', lw=lw, linestyle='--')
+         lw=2, label='ROC curve (area = %0.4f)' % roc_auc[1])
+plt.plot([0, 1], [0, 1], color='black', lw=1, linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate', fontsize = 16)
@@ -222,7 +232,6 @@ plt.title('ROC Curve', fontsize = 20)
 plt.legend(loc="lower right", fontsize = 16)
 plt.savefig("ROC Curve.png")
 
-
 # Show some correctly classified images
 correct = np.where(Y_pred_classes==Y_true)[0]
 print("Found %d correct labels", len(correct))
@@ -230,7 +239,7 @@ for i, correct in enumerate(correct[:9]):
     plt.subplot(3,3,i+1)
     plt.title("Predicted {}, Class {}".format(Y_pred_classes[correct], Y_true[correct]))
     plt.tight_layout()
-    plt.imsave("correct.png", X_test[correct].reshape(64,64))
+    plt.imsave("correct.png", X_test[correct])
 
 # Show hard to classify images
 incorrect = np.where(Y_pred_classes!=Y_true)[0]
@@ -239,15 +248,4 @@ for i, incorrect in enumerate(incorrect[:9]):
     plt.subplot(3,3,i+1)
     plt.title("Predicted {}, Class {}".format(Y_pred_classes[incorrect], Y_true[incorrect]))
     plt.tight_layout()
-    plt.imsave("incorrect.png", X_test[incorrect].reshape(64,64))
-
-
-# Visualize the filters
-# the name of the layer we want to visualize
-print("Trying to visualize filters . . .")
-LAYER_NAME1 = 'conv2d_1'
-LAYER_NAME2 = 'conv2d_2'
-
-# example function call
-visualize_layer(model, LAYER_NAME1)
-visualize_layer(model, LAYER_NAME2)
+    plt.imsave("incorrect.png", X_test[incorrect])
