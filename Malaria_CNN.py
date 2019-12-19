@@ -154,9 +154,7 @@ print("Test_Accuracy(after augmentation): {:.2f}%".format(model.evaluate_generat
 # Visualize the filters
 # the name of the layer we want to visualize
 print("Trying to visualize filters . . .")
-for layer in model.layers:
-    # Visualize the current layer
-    visualize_layer(model, layer.name)
+visualize_layer(model, 'conv2d_2')
 
 # Plot the training vs testing accuracy and loss
 aug_acc = history2.history['accuracy']
