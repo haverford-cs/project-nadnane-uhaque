@@ -134,6 +134,7 @@ def plot_acc_loss(history, augmented):
     if augmented == True:
         trn_accl = 'Augmented ' + trn_accl
         trn_lossl = 'Augmented ' + trn_lossl
+        plt.figure()
         plt.plot(epochs, acc, 'bo', label=trn_accl)
         plt.plot(epochs, loss, 'r', label=trn_lossl)
         plt.xlabel("Epoch", fontsize = 16)
@@ -142,6 +143,7 @@ def plot_acc_loss(history, augmented):
         plt.legend()
         plt.savefig(title3 + '.png')
     else:
+        plt.figure()
         plt.plot(epochs, acc, 'bo', label= trn_accl)
         plt.plot(epochs, val_acc, 'r', label= tst_accl)
         plt.xlabel("Epoch", fontsize = 16)
@@ -207,7 +209,7 @@ def plot_cm(model, y_test, test_generator):
     group_percentages = ['{0:.2%}'.format(value) for value in confusion_mtx.flatten()/np.sum(confusion_mtx)]
     labels = [f"{v1}\n{v2}\n{v3}" for v1, v2, v3 in zip(group_names,group_counts,group_percentages)]
     labels = np.asarray(labels).reshape(2,2)
-    sns.heatmap(confusion_mtx, annot=True, fmt="d", cbar = True);
+    sns.heatmap(confusion_mtx, annot=labels, fmt='', cmap = 'Blues', cbar = True);
     plt.ylabel('True Label', fontsize = 18)
     plt.xlabel('Predicted Label', fontsize = 18)
     plt.title('Confusion Matrix', fontsize = 20)
@@ -233,35 +235,15 @@ def plot_ROC(y_test, Y_prediction):
     #Plot ROC curve for the positive class
     plt.figure(figsize=(20,10), dpi=300)
     plt.plot(fpr[1], tpr[1], color='red',
-             lw=2, label='ROC curve (area = %0.4f)' % roc_auc[1])
+             lw=4, label='ROC curve (area = %0.4f)' % roc_auc[1])
     plt.plot([0, 1], [0, 1], color='black', lw=1, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate', fontsize = 16)
-    plt.ylabel('True Positive Rate', fontsize = 16)
+    plt.xlabel('False Positive Rate', fontsize = 20)
+    plt.ylabel('True Positive Rate', fontsize = 20)
     plt.title('ROC Curve', fontsize = 20)
     plt.legend(loc="lower right", fontsize = 16)
     plt.savefig("ROC Curve.png")
-
-# Output a plot of some correctly and incorrectly classified images
-def save_examples(X_test, Y_pred_classes, Y_true):
-    # Show some correctly classified images
-    correct = np.where(Y_pred_classes==Y_true)[:18]
-    print("Found %d correct labels", len(correct))
-    for i, correct in enumerate(correct[:9]):
-        plt.subplot(3,3,i+1)
-        plt.title("Predicted {}, Class {}".format(Y_pred_classes[correct], Y_true[correct]))
-        plt.tight_layout()
-        plt.savefig("correct.png")
-
-    # Show hard to classify images
-    incorrect = np.where(Y_pred_classes!=Y_true)[:18]
-    print("Found %d incorrect labels", len(incorrect))
-    for i, incorrect in enumerate(incorrect[:9]):
-        plt.subplot(3,3,i+1)
-        plt.title("Predicted {}, Class {}".format(Y_pred_classes[incorrect], Y_true[incorrect]))
-        plt.tight_layout()
-        plt.savefig("incorrect.png")
 
 # Visualize the conv layer filters of our model!
 def visualize_filters(model):
@@ -314,10 +296,5 @@ if __name__ == "__main__":
     # Plot and save the ROC curve
     plot_ROC(y_test, Y_prediction)
 
-    # Output a plot of some correctly and incorrectly classified images
-    save_examples(X_test, Y_pred_classes, Y_true)
-
     # Visualize some of the model filters!
     visualize_filters(model)
-    
-main()
