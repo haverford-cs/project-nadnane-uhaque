@@ -1,7 +1,7 @@
 """
-#Visualization of the filters of CNN, via gradient ascent in input space.
-This script can run on CPU in a few minutes.
-Results example: ![Visualization](http://i.imgur.com/4nj4KjN.jpg)
+Source: https://keras.io/examples/conv_filter_visualization/
+Visualization of the filters of CNN, via gradient ascent in input space.
+with small modifications by Nadine & Tanjuma
 """
 from __future__ import print_function
 
