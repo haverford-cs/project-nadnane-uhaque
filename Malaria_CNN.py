@@ -89,7 +89,7 @@ def make_model(opt, l, d):
     model.add(BatchNormalization(axis = -1))
     model.add(Dropout(d))
     model.add(Dense(activation = 'sigmoid', units=2))
-    model.compile(optimizer = opt, loss = loss, metrics = ['accuracy'])
+    model.compile(optimizer = opt, loss = l, metrics = ['accuracy'])
     return model
 
 # Split the data by the given test split fraction ts
@@ -119,10 +119,11 @@ def train_model(model, X_train, y_train, b, e, val_split):
 # Return nothing since the plot is saved to disk as a png
 def plot_acc_loss(history, augmented):
     acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
     loss = history.history['loss']
-    val_loss = history.history['val_loss']
     epochs = range(1, len(acc) + 1)
+    if augmented == False:
+        val_acc = history.history['val_accuracy']
+        val_loss = history.history['val_loss']
     # Plot and save the accuracy figure
     trn_accl = 'Training acc'
     trn_lossl = 'Training loss'
@@ -133,28 +134,31 @@ def plot_acc_loss(history, augmented):
     if augmented == True:
         trn_accl = 'Augmented ' + trn_accl
         trn_lossl = 'Augmented ' + trn_lossl
-        tst_accl = 'Augmented ' + tst_accl
-        tst_lossl = 'Augmented ' + tst_lossl
-        title1 = 'Augmented ' + title1
-        title2 = 'Augmented ' + title2
+        plt.plot(epochs, acc, 'bo', label=trn_accl)
+        plt.plot(epochs, loss, 'r', label=trn_lossl)
+        plt.xlabel("Epoch", fontsize = 16)
+        plt.ylabel("Accuracy", fontsize = 16)
+        title3 = "Augmented Training Accuracy and Loss"
+        plt.legend()
+        plt.savefig(title3 + '.png')
+    else:
+        plt.plot(epochs, acc, 'bo', label= trn_accl)
+        plt.plot(epochs, val_acc, 'r', label= tst_accl)
+        plt.xlabel("Epoch", fontsize = 16)
+        plt.ylabel("Accuracy", fontsize = 16)
+        plt.title(title1)
+        plt.legend()
+        plt.savefig(title1 + '.png')
 
-    plt.plot(epochs, acc, 'bo', label= trn_accl)
-    plt.plot(epochs, val_acc, 'r', label= tst_accl)
-    plt.xlabel("Epoch", fontsize = 16)
-    plt.ylabel("Accuracy", fontsize = 16)
-    plt.title(title1)
-    plt.legend()
-    plt.savefig(title1 + '.png')
-
-    # Plot and save the loss figure
-    plt.figure()
-    plt.plot(epochs, loss, 'bo', label= trn_lossl)
-    plt.plot(epochs, val_loss, 'r', label= tst_lossl)
-    plt.xlabel("Epoch", fontsize = 16)
-    plt.ylabel("Loss", fontsize = 16)
-    plt.title(title2)
-    plt.legend()
-    plt.savefig(title2 + '.png')
+        # Plot and save the loss figure
+        plt.figure()
+        plt.plot(epochs, loss, 'bo', label= trn_lossl)
+        plt.plot(epochs, val_loss, 'r', label= tst_lossl)
+        plt.xlabel("Epoch", fontsize = 16)
+        plt.ylabel("Loss", fontsize = 16)
+        plt.title(title2)
+        plt.legend()
+        plt.savefig(title2 + '.png')
 
 # Augment the data using the data, batch size and # epochs
 # Return a new history object and the test data generator
@@ -199,7 +203,7 @@ def plot_cm(model, y_test, test_generator):
     plt.figure(figsize=(10,8))
     # Define confusion matrix quadrant labels
     group_names = ['True Neg','False Pos','False Neg','True Pos']
-    group_counts = ['{0:0.0f'.format(value) for value in confusion_mtx.flatten()]
+    group_counts = ['{0:0.0f}'.format(value) for value in confusion_mtx.flatten()]
     group_percentages = ['{0:.2%}'.format(value) for value in confusion_mtx.flatten()/np.sum(confusion_mtx)]
     labels = [f"{v1}\n{v2}\n{v3}" for v1, v2, v3 in zip(group_names,group_counts,group_percentages)]
     labels = np.asarray(labels).reshape(2,2)
@@ -209,7 +213,7 @@ def plot_cm(model, y_test, test_generator):
     plt.title('Confusion Matrix', fontsize = 20)
     plt.savefig("Confusion Matrix.png")
 
-    return Y_pred_classes, Y_true
+    return Y_prediction, Y_pred_classes, Y_true 
 
 # Plot and save the ROC curve
 def plot_ROC(y_test, Y_prediction):
@@ -248,7 +252,7 @@ def save_examples(X_test, Y_pred_classes, Y_true):
         plt.subplot(3,3,i+1)
         plt.title("Predicted {}, Class {}".format(Y_pred_classes[correct], Y_true[correct]))
         plt.tight_layout()
-        plt.savefig("correct.png", X_test[correct])
+        plt.savefig("correct.png")
 
     # Show hard to classify images
     incorrect = np.where(Y_pred_classes!=Y_true)[:18]
@@ -257,7 +261,7 @@ def save_examples(X_test, Y_pred_classes, Y_true):
         plt.subplot(3,3,i+1)
         plt.title("Predicted {}, Class {}".format(Y_pred_classes[incorrect], Y_true[incorrect]))
         plt.tight_layout()
-        plt.savefig("incorrect.png", X_test[incorrect])
+        plt.savefig("incorrect.png")
 
 # Visualize the conv layer filters of our model!
 def visualize_filters(model):
@@ -305,10 +309,10 @@ if __name__ == "__main__":
     plot_acc_loss(history2, True)
 
     # Plot and save the confusion matrix
-    plot_cm(model, y_test, test_gen)
+    Y_prediction, Y_pred_classes, Y_true = plot_cm(model, y_test, test_gen)
 
     # Plot and save the ROC curve
-    Y_pred_classes, Y_true = plot_ROC(y_test, Y_prediction)
+    plot_ROC(y_test, Y_prediction)
 
     # Output a plot of some correctly and incorrectly classified images
     save_examples(X_test, Y_pred_classes, Y_true)

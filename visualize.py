@@ -204,7 +204,7 @@ def visualize_layer(model,
     input_img = model.inputs[0]
 
     # get the symbolic outputs of each "key" layer (we gave them unique names).
-    layer_dict = dict([(layer.name, layer) for layer in model.layers[1:]])
+    layer_dict = dict([(layer.name, layer) for layer in model.layers])
     print("the layer dictionary is: ", layer_dict)
     print("model.layers = ", model.layers)
 
